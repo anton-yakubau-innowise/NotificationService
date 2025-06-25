@@ -1,6 +1,6 @@
 # NotificationService
 
-** NotificationService** — микросервис для рассылки уведомлений (email, SMS, push-уведомления) 
+**NotificationService** — микросервис для рассылки уведомлений (email, SMS, push-уведомления) 
 
 ## Структура
 
