@@ -12,6 +12,7 @@ public class Notification
     public NotificationType Type { get; private set; }
     public NotificationStatus Status { get; private set; }
     public DateTime CreatedAt { get; private set; }
+    public DateTime? UpdatedAt { get; private set; }
     public DateTime? ProcessedAt { get; private set; }
     public string? FailureReason { get; private set; }
 
@@ -31,7 +32,12 @@ public class Notification
         CreatedAt = DateTime.UtcNow;
     }
 
-    public static Notification CreateNotification(string recipient, string message, NotificationType type, NotificationStatus? status, string? subject)
+    public static Notification CreateNotification(
+        string recipient,
+        string message,
+        NotificationType type,
+        NotificationStatus? status = null,
+        string? subject = null)
     {
         return new Notification(recipient, message, type, status, subject);
     }
@@ -39,12 +45,17 @@ public class Notification
 
     public void MarkAsSent()
     {
+        if (Status != NotificationStatus.Pending)
+            throw new InvalidOperationException("Only pending notifications can be marked as sent.");
+
         if (Status == NotificationStatus.Sent)
             throw new InvalidOperationException("Notification has already been sent.");
 
         Status = NotificationStatus.Sent;
         ProcessedAt = DateTime.UtcNow;
         FailureReason = null;
+
+        SetUpdated();
     }
 
     public void MarkAsFailed(string reason)
@@ -54,6 +65,46 @@ public class Notification
         Status = NotificationStatus.Failed;
         ProcessedAt = DateTime.UtcNow;
         FailureReason = reason;
+
+        SetUpdated();
+    }
+    public void Retry()
+    {
+        if (Status != NotificationStatus.Failed)
+            throw new InvalidOperationException("Only failed notifications can be retried.");
+
+        Status = NotificationStatus.Pending;
+        ProcessedAt = null;
+        FailureReason = null;
+
+        SetUpdated();
     }
 
+    public void UpdateContent(
+        string? recipient = null,
+        string? message = null,
+        string? subject = null)
+    {
+        if (Status != NotificationStatus.Pending)
+        {
+            throw new InvalidOperationException("Only pending notifications can be updated.");
+        }   
+
+        if (!string.IsNullOrWhiteSpace(recipient))
+            Recipient = recipient;
+
+        if (!string.IsNullOrWhiteSpace(message))
+            Message = message;
+
+        if (!string.IsNullOrWhiteSpace(subject))
+            Subject = subject;
+
+
+        SetUpdated();
+    }
+
+    private void SetUpdated()
+    {
+        UpdatedAt = DateTime.UtcNow;
+    }
 }
