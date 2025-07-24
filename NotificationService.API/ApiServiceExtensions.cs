@@ -1,6 +1,4 @@
-using System.Reflection;
 using System.Text.Json.Serialization;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace NotificationService.API
 {
@@ -16,6 +14,7 @@ namespace NotificationService.API
 
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
+            services.AddHttpContextAccessor();
 
             return services;
         }

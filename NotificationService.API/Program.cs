@@ -1,7 +1,9 @@
+using Microsoft.EntityFrameworkCore;
 using NotificationService.API;
 using NotificationService.API.Middleware;
 using NotificationService.Application;
 using NotificationService.Infrastructure;
+using NotificationService.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,12 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<NotificationDbContext>();
+        dbContext.Database.Migrate();
+    }
 }
 
 app.UseHttpsRedirection();

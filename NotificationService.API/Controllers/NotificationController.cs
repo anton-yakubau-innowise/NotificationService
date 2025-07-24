@@ -41,6 +41,15 @@ public class NotificationController(INotificationApplicationService notification
         return CreatedAtAction(nameof(GetNotificationById), new { id = notificationId }, notificationId);
     }
 
+    [HttpPost("default")]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreateDefaultNotification([FromBody] CreateDefaultNotificationRequest request, CancellationToken cancellationToken)
+    {
+        var notificationId = await notificationService.CreateDefaultNotificationAsync(request, cancellationToken);
+        return CreatedAtAction(nameof(GetNotificationById), new { id = notificationId }, notificationId);
+    }
+
     [HttpPatch("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
