@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using NotificationService.Application.Dtos;
 using NotificationService.Application.Interfaces;
+using NotificationService.Domain.Enums;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -38,6 +39,19 @@ public class NotificationController(INotificationApplicationService notification
     public async Task<IActionResult> CreateNotification([FromBody] CreateNotificationRequest request, CancellationToken cancellationToken)
     {
         var notificationId = await notificationService.CreateNotificationAsync(request, cancellationToken);
+
+        Response.Cookies.Append(
+            "LastNotificationType",
+            request.Type.ToString(),
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddDays(30)
+            }
+        );
+
         return CreatedAtAction(nameof(GetNotificationById), new { id = notificationId }, notificationId);
     }
 
@@ -46,7 +60,27 @@ public class NotificationController(INotificationApplicationService notification
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateDefaultNotification([FromBody] CreateDefaultNotificationRequest request, CancellationToken cancellationToken)
     {
-        var notificationId = await notificationService.CreateDefaultNotificationAsync(request, cancellationToken);
+        var typeFromCookie = Request.Cookies["LastNotificationType"];
+
+        if (string.IsNullOrEmpty(typeFromCookie) || !Enum.TryParse<NotificationType>(typeFromCookie, true, out var notificationType))
+        {
+            return BadRequest("No valid notification type found in cookies.");
+        }
+
+        var notificationId = await notificationService.CreateNotificationAsync(request, notificationType, cancellationToken);
+
+        Response.Cookies.Append(
+            "LastNotificationType",
+            notificationType.ToString(),
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddDays(30)
+            }
+        );
+
         return CreatedAtAction(nameof(GetNotificationById), new { id = notificationId }, notificationId);
     }
 

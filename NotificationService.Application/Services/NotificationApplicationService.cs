@@ -1,12 +1,12 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using NotificationService.Application.Dtos;
 using NotificationService.Application.Interfaces;
 using NotificationService.Domain.Entities;
+using NotificationService.Domain.Enums;
 
 namespace NotificationService.Application.Services;
 
-public class NotificationApplicationService(IUnitOfWork unitOfWork, IMapper mapper, IHttpContextAccessor httpContextAccessor) : INotificationApplicationService
+public class NotificationApplicationService(IUnitOfWork unitOfWork, IMapper mapper) : INotificationApplicationService
 {
 
     public async Task<NotificationDto?> GetNotificationByIdAsync(Guid id, CancellationToken cancellationToken)
@@ -36,40 +36,23 @@ public class NotificationApplicationService(IUnitOfWork unitOfWork, IMapper mapp
             request.Recipient,
             request.Message,
             request.Type,
-            Domain.Enums.NotificationStatus.Pending,
+            NotificationStatus.Pending,
             request.Subject
         );
-
-        var cookieOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTime.UtcNow.AddDays(30)
-        };
-
-        httpContextAccessor.HttpContext?.Response.Cookies.Append("last_notification_type", request.Type.ToString(), cookieOptions);
-
+        
         await unitOfWork.Notifications.AddAsync(notification, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return notification.Id;
     }
 
-    public async Task<Guid> CreateDefaultNotificationAsync(CreateDefaultNotificationRequest request, CancellationToken cancellationToken)
+    public async Task<Guid> CreateNotificationAsync(CreateDefaultNotificationRequest request, NotificationType defaultType, CancellationToken cancellationToken)
     {
-        var typeFromCookie = httpContextAccessor.HttpContext?.Request.Cookies["last_notification_type"];
-
-        if (string.IsNullOrEmpty(typeFromCookie) || !Enum.TryParse<Domain.Enums.NotificationType>(typeFromCookie, true, out var notificationType))
-        {
-            throw new InvalidOperationException("No valid notification type found in cookies.");
-        }
-
         var notification = Notification.CreateNotification(
             request.Recipient,
             request.Message,
-            notificationType,
-            Domain.Enums.NotificationStatus.Pending,
+            defaultType,
+            NotificationStatus.Pending,
             request.Subject
         );
 
