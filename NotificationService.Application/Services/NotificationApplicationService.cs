@@ -11,21 +11,21 @@ public class NotificationApplicationService(IUnitOfWork unitOfWork, IMapper mapp
 
     public async Task<NotificationDto?> GetNotificationByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        var notification = await GetNotificationAndEnsureExistsAsync(id, cancellationToken);
+        var notification = await GetNoTrackingNotificationAndEnsureExistsAsync(id, cancellationToken);
 
         return mapper.Map<NotificationDto>(notification);
     }
 
     public async Task<NotificationWithMessageDto?> GetNotificationWithMessageByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        var notification = await GetNotificationAndEnsureExistsAsync(id, cancellationToken);
+        var notification = await GetNoTrackingNotificationAndEnsureExistsAsync(id, cancellationToken);
 
         return mapper.Map<NotificationWithMessageDto>(notification);
     }
 
     public async Task<IEnumerable<NotificationDto>> GetAllNotificationsAsync(CancellationToken cancellationToken)
     {
-        var notifications = await unitOfWork.Notifications.ListAllAsync(cancellationToken);
+        var notifications = await unitOfWork.Notifications.ListAllAsNoTrackingAsync(cancellationToken);
 
         return mapper.Map<IEnumerable<NotificationDto>>(notifications);
     }
@@ -39,7 +39,7 @@ public class NotificationApplicationService(IUnitOfWork unitOfWork, IMapper mapp
             NotificationStatus.Pending,
             request.Subject
         );
-        
+
         await unitOfWork.Notifications.AddAsync(notification, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -109,6 +109,18 @@ public class NotificationApplicationService(IUnitOfWork unitOfWork, IMapper mapp
     private async Task<Notification> GetNotificationAndEnsureExistsAsync(Guid id, CancellationToken cancellationToken)
     {
         var notification = await unitOfWork.Notifications.GetByIdAsync(id, cancellationToken);
+
+        if (notification is null)
+        {
+            throw new KeyNotFoundException($"Notification with ID {id} not found.");
+        }
+
+        return notification;
+    }
+
+    private async Task<Notification> GetNoTrackingNotificationAndEnsureExistsAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var notification = await unitOfWork.Notifications.GetByIdAsNoTrackingAsync(id, cancellationToken);
 
         if (notification is null)
         {

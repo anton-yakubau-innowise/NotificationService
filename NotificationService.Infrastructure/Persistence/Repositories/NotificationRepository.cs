@@ -13,15 +13,37 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
                                    .FirstOrDefaultAsync(v => v.Id == id, cancellationToken);
         }
 
+        public async Task<Notification?> GetByIdAsNoTrackingAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            return await dbContext.Notifications
+                                   .AsNoTracking()
+                                   .FirstOrDefaultAsync(v => v.Id == id, cancellationToken);
+        }
+
         public async Task<IEnumerable<Notification>> ListAllAsync(CancellationToken cancellationToken = default)
         {
             return await dbContext.Notifications
                                    .ToListAsync(cancellationToken);
         }
 
+        public async Task<IEnumerable<Notification>> ListAllAsNoTrackingAsync(CancellationToken cancellationToken = default)
+        {
+            return await dbContext.Notifications
+                                   .AsNoTracking()
+                                   .ToListAsync(cancellationToken);
+        }
+
         public async Task<IEnumerable<Notification>> ListAsync(Expression<Func<Notification, bool>> predicate, CancellationToken cancellationToken = default)
         {
             return await dbContext.Notifications
+                                   .Where(predicate)
+                                   .ToListAsync(cancellationToken);
+        }
+
+        public async Task<IEnumerable<Notification>> ListAsNoTrackingAsync(Expression<Func<Notification, bool>> predicate, CancellationToken cancellationToken = default)
+        {
+            return await dbContext.Notifications
+                                   .AsNoTracking()
                                    .Where(predicate)
                                    .ToListAsync(cancellationToken);
         }

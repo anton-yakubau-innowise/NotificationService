@@ -7,6 +7,8 @@ using NotificationService.Domain.Enums;
 [Route("api/[controller]")]
 public class NotificationController(INotificationApplicationService notificationService) : ControllerBase
 {
+    const string LastNotificationTypeCookieName = "LastNotificationType";
+
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<NotificationDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllNotifications(CancellationToken cancellationToken)
@@ -40,17 +42,7 @@ public class NotificationController(INotificationApplicationService notification
     {
         var notificationId = await notificationService.CreateNotificationAsync(request, cancellationToken);
 
-        Response.Cookies.Append(
-            "LastNotificationType",
-            request.Type.ToString(),
-            new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTimeOffset.UtcNow.AddDays(30)
-            }
-        );
+        AppendNotificationTypeCookie(request.Type);
 
         return CreatedAtAction(nameof(GetNotificationById), new { id = notificationId }, notificationId);
     }
@@ -60,7 +52,7 @@ public class NotificationController(INotificationApplicationService notification
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateDefaultNotification([FromBody] CreateDefaultNotificationRequest request, CancellationToken cancellationToken)
     {
-        var typeFromCookie = Request.Cookies["LastNotificationType"];
+        var typeFromCookie = Request.Cookies[LastNotificationTypeCookieName];
 
         if (string.IsNullOrEmpty(typeFromCookie) || !Enum.TryParse<NotificationType>(typeFromCookie, true, out var notificationType))
         {
@@ -69,17 +61,7 @@ public class NotificationController(INotificationApplicationService notification
 
         var notificationId = await notificationService.CreateNotificationAsync(request, notificationType, cancellationToken);
 
-        Response.Cookies.Append(
-            "LastNotificationType",
-            notificationType.ToString(),
-            new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTimeOffset.UtcNow.AddDays(30)
-            }
-        );
+        AppendNotificationTypeCookie(notificationType);
 
         return CreatedAtAction(nameof(GetNotificationById), new { id = notificationId }, notificationId);
     }
@@ -119,5 +101,21 @@ public class NotificationController(INotificationApplicationService notification
     {
         await notificationService.RetryNotificationsAsync(request, cancellationToken);
         return NoContent();
+    }
+
+
+    private void AppendNotificationTypeCookie(NotificationType notificationType)
+    {
+        Response.Cookies.Append(
+            LastNotificationTypeCookieName,
+            notificationType.ToString(),
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddDays(30)
+            }
+        );
     }
 }
