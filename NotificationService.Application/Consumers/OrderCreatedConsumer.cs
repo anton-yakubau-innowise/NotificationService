@@ -12,6 +12,14 @@ public class OrderCreatedConsumer(INotificationApplicationService notificationAp
     {
         var message = context.Message;
 
+        await SendEmailNotification(context, message);
+
+        await SendSmsNotification(context, message);
+
+    }
+
+    private async Task SendEmailNotification(ConsumeContext<OrderCreatedEvent> context, OrderCreatedEvent message)
+    {
         if (!string.IsNullOrWhiteSpace(message.CustomerEmail))
         {
             var emailMessage = $"Your order {message.OrderId} for the amount of {message.TotalPrice.Amount} {message.TotalPrice.CurrencyCode} has been successfully placed.";
@@ -24,7 +32,10 @@ public class OrderCreatedConsumer(INotificationApplicationService notificationAp
 
             await notificationApplicationService.CreateNotificationAsync(emailRequest, context.CancellationToken);
         }
+    }
 
+    private async Task SendSmsNotification(ConsumeContext<OrderCreatedEvent> context, OrderCreatedEvent message)
+    {
         if (!string.IsNullOrWhiteSpace(message.CustomerPhoneNumber))
         {
             var smsMessage = $"Your order {message.OrderId} for the amount of {message.TotalPrice.Amount} {message.TotalPrice.CurrencyCode} has been successfully placed.";
@@ -37,6 +48,5 @@ public class OrderCreatedConsumer(INotificationApplicationService notificationAp
 
             await notificationApplicationService.CreateNotificationAsync(smsRequest, context.CancellationToken);
         }
-        
     }
 }
