@@ -8,7 +8,8 @@ COPY ["NotificationService.Application/NotificationService.Application.csproj", 
 COPY ["NotificationService.Domain/NotificationService.Domain.csproj", "NotificationService.Domain/"]
 COPY ["NotificationService.Infrastructure/NotificationService.Infrastructure.csproj", "NotificationService.Infrastructure/"]
 
-RUN dotnet restore "NotificationService.sln"
+RUN --mount=type=secret,id=nugetconfig,dst=/root/.nuget/NuGet/NuGet.Config \
+    dotnet restore "NotificationService.sln"
 
 COPY . .
 
