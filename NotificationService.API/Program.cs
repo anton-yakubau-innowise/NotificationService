@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using NotificationService.API;
 using NotificationService.API.Middleware;
 using NotificationService.Application;
+using NotificationService.Application.Background;
 using NotificationService.Infrastructure;
 using NotificationService.Infrastructure.Persistence;
 
@@ -10,6 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApiServices();
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
+
+builder.Services.AddHostedService<NotificationSendingWorker>();
 
 var app = builder.Build();
 
