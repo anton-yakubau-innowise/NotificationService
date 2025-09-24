@@ -59,7 +59,15 @@ public class NotificationController(INotificationApplicationService notification
             return BadRequest("No valid notification type found in cookies.");
         }
 
-        var notificationId = await notificationService.CreateNotificationAsync(request, notificationType, cancellationToken);
+        var notificationRequest = new CreateNotificationRequest(
+            request.Recipient,
+            request.Message,
+            notificationType,
+            request.Subject,
+            request.ExternalReferenceId
+        );
+
+        var notificationId = await notificationService.CreateNotificationAsync(notificationRequest, cancellationToken);
 
         AppendNotificationTypeCookie(notificationType);
 

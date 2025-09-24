@@ -6,6 +6,7 @@ namespace NotificationService.Application.Dtos;
 public record CreateDefaultNotificationRequest(
     [Required] string Recipient,
     [Required] string Message,
-    string? Subject
+    string? Subject,
+    Guid? ExternalReferenceId = null
 );
     

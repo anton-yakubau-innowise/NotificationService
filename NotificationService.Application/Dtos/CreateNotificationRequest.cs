@@ -7,6 +7,7 @@ public record CreateNotificationRequest(
     [Required] string Recipient,
     [Required] string Message,
     [Required] NotificationType Type,
-    string? Subject
+    string? Subject = null,
+    Guid? ExternalReferenceId = null
 );
     

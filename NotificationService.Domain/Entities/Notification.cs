@@ -6,6 +6,7 @@ namespace NotificationService.Domain.Entities;
 public class Notification
 {
     public Guid Id { get; private set; }
+    public Guid? ExternalReferenceId { get; private set; }
     public string Recipient { get; private set; } = null!;
     public string? Subject { get; private set; }
     public string Message { get; private set; } = null!;
@@ -18,7 +19,13 @@ public class Notification
 
     private Notification() { }
 
-    private Notification(string recipient, string message, NotificationType type, NotificationStatus? status, string? subject)
+    private Notification(
+        string recipient,
+        string message,
+        NotificationType type, 
+        NotificationStatus? status,
+        string? subject,
+        Guid? externalReferenceId)
     {
         Guard.AgainstNullOrWhiteSpace(recipient, nameof(recipient));
         Guard.AgainstNullOrWhiteSpace(message, nameof(message));
@@ -29,6 +36,7 @@ public class Notification
         Type = type;
         Subject = subject;
         Status = status ?? NotificationStatus.Pending;
+        ExternalReferenceId = externalReferenceId;
         CreatedAt = DateTime.UtcNow;
     }
 
@@ -37,9 +45,10 @@ public class Notification
         string message,
         NotificationType type,
         NotificationStatus? status = null,
-        string? subject = null)
+        string? subject = null,
+        Guid? externalReferenceId = null)
     {
-        return new Notification(recipient, message, type, status, subject);
+        return new Notification(recipient, message, type, status, subject, externalReferenceId);
     }
 
 

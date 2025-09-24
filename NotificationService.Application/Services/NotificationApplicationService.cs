@@ -32,28 +32,20 @@ public class NotificationApplicationService(IUnitOfWork unitOfWork, IMapper mapp
 
     public async Task<Guid> CreateNotificationAsync(CreateNotificationRequest request, CancellationToken cancellationToken)
     {
+
+        var existing = await FindExistingNotificationAsync(request.ExternalReferenceId, request.Recipient, request.Type, cancellationToken);
+        if (existing != null)
+        {
+            return existing.Id;
+        }
+
         var notification = Notification.CreateNotification(
             request.Recipient,
             request.Message,
             request.Type,
             NotificationStatus.Pending,
-            request.Subject
-        );
-
-        await unitOfWork.Notifications.AddAsync(notification, cancellationToken);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-
-        return notification.Id;
-    }
-
-    public async Task<Guid> CreateNotificationAsync(CreateDefaultNotificationRequest request, NotificationType defaultType, CancellationToken cancellationToken)
-    {
-        var notification = Notification.CreateNotification(
-            request.Recipient,
-            request.Message,
-            defaultType,
-            NotificationStatus.Pending,
-            request.Subject
+            request.Subject,
+            request.ExternalReferenceId
         );
 
         await unitOfWork.Notifications.AddAsync(notification, cancellationToken);
@@ -106,6 +98,14 @@ public class NotificationApplicationService(IUnitOfWork unitOfWork, IMapper mapp
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task SendNotificationAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var notification = await GetNotificationAndEnsureExistsAsync(id, cancellationToken);
+
+        notification.MarkAsSent();
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+
     private async Task<Notification> GetNotificationAndEnsureExistsAsync(Guid id, CancellationToken cancellationToken)
     {
         var notification = await unitOfWork.Notifications.GetByIdAsync(id, cancellationToken);
@@ -128,5 +128,14 @@ public class NotificationApplicationService(IUnitOfWork unitOfWork, IMapper mapp
         }
 
         return notification;
+    }
+    
+    private async Task<Notification?> FindExistingNotificationAsync(Guid? externalReferenceId, string recipient, NotificationType type, CancellationToken cancellationToken)
+    {
+        return (await unitOfWork.Notifications.ListAsync(
+            n => n.ExternalReferenceId == externalReferenceId
+                && n.Recipient == recipient
+                && n.Type == type,
+            cancellationToken)).FirstOrDefault();
     }
 }
