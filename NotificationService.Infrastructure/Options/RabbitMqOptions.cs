@@ -4,7 +4,7 @@ namespace NotificationService.Infrastructure.Options;
 
 public class RabbitMqOptions
 {
-    public const string SectionName = "MassTransit"; 
+    public const string SectionName = "MassTransit:RabbitMq"; 
 
     public string Host { get; set; } = string.Empty;
 
