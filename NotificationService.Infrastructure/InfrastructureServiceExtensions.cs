@@ -30,7 +30,7 @@ public static class InfrastructureServiceExtensions
             {
                 var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
 
-                cfg.Host(options.Host, "/", h =>
+                cfg.Host(options.Host, options.VirtualHost, h =>
                 {
                     h.Username(options.Username);
                     h.Password(options.Password);

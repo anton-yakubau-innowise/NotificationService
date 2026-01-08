@@ -12,7 +12,7 @@ builder.Services.AddApiServices();
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
-//builder.Services.AddHostedService<NotificationSendingWorker>();
+builder.Services.AddHostedService<NotificationSendingWorker>();
 
 var app = builder.Build();
 

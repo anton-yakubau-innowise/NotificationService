@@ -12,5 +12,7 @@ public class RabbitMqOptions
 
     public string Password { get; set; } = string.Empty;
 
+    public string VirtualHost { get; set; } = "/";
+
     public string OrderCreatedQueueName { get; set; } = string.Empty;
 }
