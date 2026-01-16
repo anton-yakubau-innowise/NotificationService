@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace NotificationService.Infrastructure.Options;
 
 public class RabbitMqOptions

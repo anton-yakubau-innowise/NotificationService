@@ -26,21 +26,39 @@ public static class InfrastructureServiceExtensions
             
         services.AddMassTransit(busConfigurator =>
         {
-            busConfigurator.UsingRabbitMq((context, cfg) =>
+            busConfigurator.AddConsumer<OrderCreatedConsumer>();
+            busConfigurator.SetKebabCaseEndpointNameFormatter();
+
+            var asbOptions = configuration.GetSection(AzureServiceBusOptions.SectionName).Get<AzureServiceBusOptions>();
+            var connectionString = asbOptions?.ConnectionString;
+
+            if (!string.IsNullOrEmpty(connectionString))
             {
-                var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
-
-                cfg.Host(options.Host, options.VirtualHost, h =>
+                busConfigurator.UsingAzureServiceBus((context, cfg) =>
                 {
-                    h.Username(options.Username);
-                    h.Password(options.Password);
+                    cfg.Host(connectionString);
+                    
+                    cfg.ConfigureEndpoints(context);
                 });
-
-                cfg.ReceiveEndpoint(options.OrderCreatedQueueName, e =>
+            }
+            else
+            {
+                busConfigurator.UsingRabbitMq((context, cfg) =>
                 {
-                    e.ConfigureConsumer<OrderCreatedConsumer>(context);
+                    var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+
+                    cfg.Host(options.Host, options.VirtualHost, h =>
+                    {
+                        h.Username(options.Username);
+                        h.Password(options.Password);
+                    });
+
+                    cfg.ReceiveEndpoint(options.OrderCreatedQueueName, e =>
+                    {
+                        e.ConfigureConsumer<OrderCreatedConsumer>(context);
+                    });
                 });
-            });
+            }
         });
 
         services.AddScoped<INotificationRepository, NotificationRepository>();
