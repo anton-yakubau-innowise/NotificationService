@@ -20,9 +20,10 @@ public static class InfrastructureServiceExtensions
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
         services.AddOptions<RabbitMqOptions>()
-            .Bind(configuration.GetSection(RabbitMqOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+            .Bind(configuration.GetSection(RabbitMqOptions.SectionName));
+
+        services.AddOptions<AzureServiceBusOptions>()
+            .Bind(configuration.GetSection(AzureServiceBusOptions.SectionName));
             
         services.AddMassTransit(busConfigurator =>
         {
