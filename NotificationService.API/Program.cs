@@ -12,8 +12,6 @@ builder.Services.AddApiServices();
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
-builder.Services.AddHostedService<NotificationSendingWorker>();
-
 var app = builder.Build();
 
 app.UseCustomExceptionHandler();
