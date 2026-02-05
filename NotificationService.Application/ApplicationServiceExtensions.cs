@@ -17,11 +17,6 @@ namespace NotificationService.Application
             services.AddHostedService<NotificationSendingWorker>();
             
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
-            
-            services.AddMassTransit(busConfigurator =>
-            {
-                busConfigurator.AddConsumer<OrderCreatedConsumer>();
-            });
 
 
             return services;
