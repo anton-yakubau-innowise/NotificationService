@@ -12,6 +12,7 @@ namespace NotificationService.Application
     {
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
+            services.AddScoped<INotificationApplicationService, NotificationApplicationService>();
 
             services.AddHostedService<NotificationSendingWorker>();
             
@@ -22,7 +23,6 @@ namespace NotificationService.Application
                 busConfigurator.AddConsumer<OrderCreatedConsumer>();
             });
 
-            services.AddScoped<INotificationApplicationService, NotificationApplicationService>();
 
             return services;
         }
