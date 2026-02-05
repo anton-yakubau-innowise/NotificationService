@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using NotificationService.API;
 using NotificationService.API.Middleware;
 using NotificationService.Application;
-using NotificationService.Application.Background;
 using NotificationService.Infrastructure;
 using NotificationService.Infrastructure.Persistence;
 
