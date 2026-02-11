@@ -29,6 +29,32 @@ namespace NotificationService.Domain.Common
                 throw new ArgumentOutOfRangeException(paramName, $"Parameter is out of valid range ({min}-{max}).");
             }
         }
+
+        public static void AgainstInvalidEmail(string argument, [CallerArgumentExpression("argument")] string? paramName = null)
+        {
+            AgainstNullOrWhiteSpace(argument, paramName);
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(argument);
+                if (addr.Address != argument)
+                {
+                    throw new ArgumentException("Invalid email address format.", paramName);
+                }
+            }
+            catch
+            {
+                throw new ArgumentException("Invalid email address format.", paramName);
+            }
+        }
         
+        public static void AgainstInvalidPhoneNumber(string argument, [CallerArgumentExpression("argument")] string? paramName = null)
+        {
+            AgainstNullOrWhiteSpace(argument, paramName);
+            var phoneNumberPattern = @"^\+?[1-9]\d{1,14}$";
+            if (!System.Text.RegularExpressions.Regex.IsMatch(argument, phoneNumberPattern))
+            {
+                throw new ArgumentException("Invalid phone number format.", paramName);
+            }
+        }
     }
 }

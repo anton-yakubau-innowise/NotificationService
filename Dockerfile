@@ -8,7 +8,8 @@ COPY ["NotificationService.Application/NotificationService.Application.csproj", 
 COPY ["NotificationService.Domain/NotificationService.Domain.csproj", "NotificationService.Domain/"]
 COPY ["NotificationService.Infrastructure/NotificationService.Infrastructure.csproj", "NotificationService.Infrastructure/"]
 
-RUN dotnet restore "NotificationService.sln"
+RUN --mount=type=secret,id=nugetconfig,dst=/root/.nuget/NuGet/NuGet.Config \
+    dotnet restore "NotificationService.sln"
 
 COPY . .
 
@@ -22,7 +23,7 @@ RUN dotnet publish "NotificationService.API.csproj" -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
-COPY --from=build /src/NotificationService.API/app/publish .
+COPY --from=build app/publish .
 
 
 ENTRYPOINT ["dotnet", "NotificationService.API.dll"]

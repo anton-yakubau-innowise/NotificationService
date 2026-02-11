@@ -5,6 +5,7 @@ namespace NotificationService.Application.Dtos;
 public record NotificationDto(
     Guid Id,
     string Recipient,
+    Guid? ExternalReferenceId,
     string? Subject,
     NotificationType Type,
     NotificationStatus Status,
